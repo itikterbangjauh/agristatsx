@@ -152,22 +152,27 @@ function Dashboard() {
 
   const bubbleData = filteredRecords.map((r) => ({
     state: r.state,
-    x: r.waterIntensity,
+    x: Number(((r.water * (1 + growth * 1.05)) / (r.tourists * (1 + growth))).toFixed(2)),
     y: r.wqi,
     z: r.forest,
     tone: r.riskTone,
   }));
 
   const stackData = filteredRecords.map((r) => {
-    const total = Object.values(r.subScores).reduce((a, b) => a + b, 0) || 1;
+    const simulatedScores = {
+      ...r.subScores,
+      tourism: r.subScores.tourism * (1 + growth),
+      water: r.subScores.water * (1 + growth * 1.05),
+    };
+    const total = Object.values(simulatedScores).reduce((a, b) => a + b, 0) || 1;
     const p = (n: number) => Number(((n / total) * 100).toFixed(1));
     return {
       state: r.state,
-      Pelancongan: p(r.subScores.tourism),
-      "Penggunaan Air": p(r.subScores.water),
-      "Tekanan Marin": p(r.subScores.wqi),
-      Hujan: p(r.subScores.climate),
-      "Hutan Simpan": p(r.subScores.forest),
+      Pelancongan: p(simulatedScores.tourism),
+      "Penggunaan Air": p(simulatedScores.water),
+      "Tekanan Marin": p(simulatedScores.wqi),
+      Hujan: p(simulatedScores.climate),
+      "Hutan Simpan": p(simulatedScores.forest),
     };
   });
 
