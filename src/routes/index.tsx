@@ -79,7 +79,7 @@ function TepiPage() {
             <p className="text-xs font-bold uppercase tracking-[0.14em] text-accent">Indeks bersepadu DOSM</p>
             <h1 className="mt-3 font-display text-4xl font-extrabold leading-tight sm:text-6xl">Apa Itu TEPI?</h1>
             <p className="mt-5 max-w-xl text-base leading-7 text-primary-foreground/85 sm:text-lg">
-              TEPI ialah Indeks Tekanan Ekopelancongan yang membantu melihat hubungan antara pertumbuhan pelancongan dan tekanan terhadap sumber alam sekitar di setiap negeri Malaysia.
+              TEPI ialah Tourism Eco-Pressure Index yang membantu melihat hubungan antara pertumbuhan pelancongan dan tekanan terhadap sumber alam sekitar di setiap negeri Malaysia.
             </p>
           </div>
         </section>
