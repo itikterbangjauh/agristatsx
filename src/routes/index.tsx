@@ -52,7 +52,12 @@ function TepiPage() {
     <div className="min-h-screen bg-background text-foreground">
       <header className="gradient-dosm text-primary-foreground">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-5">
-          <span className="font-display text-sm font-extrabold">AgriStatX TourismEcoAI</span>
+          <div className="flex items-center gap-3">
+            <span className="grid size-10 place-items-center rounded-lg bg-primary-foreground/15">
+              <Leaf className="size-5" />
+            </span>
+            <span className="font-display text-lg font-extrabold sm:text-xl">AgriStatX TourismEcoAI</span>
+          </div>
           <Link
             to="/dashboard"
             className="inline-flex items-center gap-2 rounded-md border border-primary-foreground/30 px-3 py-1.5 text-sm font-semibold hover:bg-primary-foreground/10"
