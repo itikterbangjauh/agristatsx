@@ -265,6 +265,21 @@ function Dashboard() {
               : "Sumber data: Data penanda aras tempatan"}
         </p>
 
+        <section className="relative min-h-[190px] overflow-hidden rounded-xl bg-primary text-primary-foreground shadow-[var(--shadow-card)]">
+          <img
+            src="https://images.unsplash.com/photo-1500534623283-312aade485b7?auto=format&fit=crop&w=1800&q=85"
+            alt="Landskap hutan hijau dan alam sekitar Malaysia"
+            className="absolute inset-0 size-full object-cover opacity-50"
+          />
+          <div className="relative max-w-xl px-6 py-8 sm:px-8 sm:py-10">
+            <p className="text-xs font-bold uppercase tracking-[0.14em] text-accent">Pelancongan alam sekitar</p>
+            <h2 className="mt-2 font-display text-2xl font-extrabold">Membaca tekanan, menjaga alam.</h2>
+            <p className="mt-2 max-w-lg text-sm leading-6 text-primary-foreground/80">
+              Data TEPI membantu melihat keseimbangan antara pertumbuhan pelancongan dan daya tampung ekologi negeri.
+            </p>
+          </div>
+        </section>
+
         {/* Simulator */}
         <section className="gradient-dosm rounded-xl p-6 text-primary-foreground shadow-[var(--shadow-card)]">
           <div className="grid gap-6 lg:grid-cols-[1.2fr_1fr]">
