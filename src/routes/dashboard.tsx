@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Bar,
   BarChart,
@@ -36,11 +36,19 @@ import {
 } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
-import { computeDashboard, simulateTepi, TEPI_WEIGHTS, type TepiRecord } from "@/lib/tepi";
+import {
+  BASE_DATA,
+  computeDashboard,
+  fetchGoogleSheetData,
+  simulateTepi,
+  TEPI_WEIGHTS,
+  type TepiRecord,
+  type StateRow,
+} from "@/lib/tepi";
 
 const TITLE = "AgriStatX TourismEcoAI — Indeks Tekanan Pelancongan Alam Sekitar";
 const DESC =
-  "Papan pemuka TEPI: indeks komposit tekanan pelancongan terhadap air, kualiti marin, iklim dan hutan simpan bagi 13 negeri Malaysia.";
+  "Papan pemuka TEPI: indeks komposit tekanan pelancongan terhadap air, kualiti marin, iklim dan hutan simpan bagi negeri-negeri Malaysia.";
 
 export const Route = createFileRoute("/dashboard")({
   head: () => ({
@@ -130,10 +138,22 @@ function SectionCard({
 }
 
 function Dashboard() {
-  const data = useMemo(() => computeDashboard(), []);
+  const [sheetRows, setSheetRows] = useState<StateRow[]>(BASE_DATA);
+  const [sourceStatus, setSourceStatus] = useState<"loading" | "live" | "fallback">("loading");
   const [growthPct, setGrowthPct] = useState(0);
   const [selectedStates, setSelectedStates] = useState<string[]>([]);
   const growth = growthPct / 100;
+
+  useEffect(() => {
+    fetchGoogleSheetData()
+      .then((rows) => {
+        setSheetRows(rows);
+        setSourceStatus("live");
+      })
+      .catch(() => setSourceStatus("fallback"));
+  }, []);
+
+  const data = useMemo(() => computeDashboard(sheetRows), [sheetRows]);
 
   const records = data.records;
   const filteredRecords = selectedStates.length
@@ -237,6 +257,13 @@ function Dashboard() {
             icon={TriangleAlert}
           />
         </div>
+        <p className="text-right text-xs text-muted-foreground">
+          {sourceStatus === "loading"
+            ? "Memuatkan data Google Sheets..."
+            : sourceStatus === "live"
+              ? "Sumber data: Google Sheets • TourismEcoAI_BPPAS"
+              : "Sumber data: Data penanda aras tempatan"}
+        </p>
 
         {/* Simulator */}
         <section className="gradient-dosm rounded-xl p-6 text-primary-foreground shadow-[var(--shadow-card)]">
@@ -318,8 +345,8 @@ function Dashboard() {
           </SectionCard>
 
           <SectionCard
-            title="Intensiti Air vs Kualiti Air Marin (MWQI)"
-            tag="Matriks sensitiviti"
+            title="Intensiti Air mengikut Negeri"
+            tag="m³ / pelancong"
             action={
               <Popover>
                 <PopoverTrigger asChild>
@@ -358,25 +385,24 @@ function Dashboard() {
           >
             <div className="h-[360px] p-4">
               <ResponsiveContainer width="100%" height="100%">
-                <ScatterChart margin={{ top: 8, right: 16, bottom: 30, left: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                <BarChart data={bubbleData} margin={{ top: 8, right: 8, bottom: 52, left: 12 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
                   <XAxis
-                    type="number"
-                    dataKey="x"
-                    name="Intensiti air (m³/pelancong)"
+                    dataKey="state"
+                    angle={-35}
+                    textAnchor="end"
+                    interval={0}
+                    height={60}
                     tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
-                    label={{ value: "m³ / pelancong", position: "insideBottom", offset: -18, fontSize: 11 }}
+                    label={{ value: "Negeri", position: "insideBottom", offset: -38, fontSize: 11 }}
                   />
                   <YAxis
-                    type="number"
-                    dataKey="y"
-                    domain={[50, 95]}
-                    name="MWQI"
+                    name="Intensiti air (m³/pelancong)"
                     tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
+                    label={{ value: "Intensiti Air", angle: -90, position: "insideLeft", offset: 4, fontSize: 11 }}
                   />
-                  <ZAxis type="number" dataKey="z" range={[80, 900]} name="Hutan simpan (k Ha)" />
                   <Tooltip
-                    cursor={{ strokeDasharray: "3 3" }}
+                    cursor={{ fill: "var(--muted)" }}
                     content={({ active, payload }) => {
                       if (!active || !payload?.length) return null;
                       const point = payload[0].payload as (typeof bubbleData)[number];
@@ -384,8 +410,6 @@ function Dashboard() {
                         <div className="rounded-lg border border-border bg-card px-3 py-2 text-xs shadow-xl">
                           <p className="mb-1 font-bold text-foreground">{point.state}</p>
                           <p>Intensiti air: {point.x} m³/pelancong</p>
-                          <p>MWQI: {point.y}</p>
-                          <p>Hutan simpan: {point.z} k Ha</p>
                         </div>
                       );
                     }}
@@ -397,13 +421,12 @@ function Dashboard() {
                     }}
                     formatter={(v: number, n: string) => [v, n]}
                   />
-                  <Scatter data={bubbleData} name="Negeri">
+                  <Bar dataKey="x" name="Intensiti Air" radius={[4, 4, 0, 0]}>
                     {bubbleData.map((d) => (
-                      <Cell key={d.state} fill={riskVar(d.tone)} fillOpacity={0.7} />
+                      <Cell key={d.state} fill={riskVar(d.tone)} />
                     ))}
-                    <LabelList dataKey="state" position="top" fill="var(--foreground)" fontSize={10} />
-                  </Scatter>
-                </ScatterChart>
+                  </Bar>
+                </BarChart>
               </ResponsiveContainer>
             </div>
           </SectionCard>
@@ -441,7 +464,7 @@ function Dashboard() {
         </SectionCard>
 
         <SectionCard
-          title="Matriks Pemantauan 13 Negeri & Cadangan Polisi Intervensi AI"
+          title={`Matriks Pemantauan ${data.kpi.totalStates} Negeri & Cadangan Polisi Intervensi AI`}
           subtitle="Diselaraskan dengan RMK-13 & UN SEEA"
           tag={`${filteredRecords.length} negeri dipaparkan`}
         >

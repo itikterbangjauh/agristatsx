@@ -18,7 +18,63 @@ export type StateRow = {
   forest: number; // ribu hektar
 };
 
-// Data asas 13 negeri (sumber: kompendium BPPAS & DTS DOSM — nilai penanda aras)
+export const GOOGLE_SHEET_URL =
+  "https://docs.google.com/spreadsheets/d/1VjWdUBBdyAAN0pSUxTuoBvFtv5hr8uEnst8m_GJnSvI/gviz/tq?tqx=out:json&gid=58623165";
+
+export function parseGoogleSheetResponse(raw: string): StateRow[] {
+  const jsonStart = raw.indexOf("{");
+  const jsonEnd = raw.lastIndexOf("}");
+  if (jsonStart < 0 || jsonEnd < jsonStart) {
+    throw new Error("Invalid Google Sheets response");
+  }
+
+  const payload = JSON.parse(raw.slice(jsonStart, jsonEnd + 1)) as {
+    table?: { rows?: Array<{ c?: Array<{ v?: string | number | null }> }> };
+  };
+  const rows = payload.table?.rows ?? [];
+  const parsed = rows
+    .map((row) => row.c ?? [])
+    .map((cells) => ({
+      state: String(cells[0]?.v ?? "").trim(),
+      tourists: Number(cells[1]?.v ?? 0),
+      water: Number(cells[2]?.v ?? 0),
+      wqi: Number(cells[3]?.v ?? 0),
+      rain: Number(cells[4]?.v ?? 0),
+      forest: Number(cells[5]?.v ?? 0),
+    }))
+    .filter((row) =>
+      row.state &&
+      [row.tourists, row.water, row.wqi, row.rain, row.forest].every(Number.isFinite),
+    );
+
+  if (!parsed.length) {
+    throw new Error("Google Sheets contains no valid state rows");
+  }
+
+  return parsed;
+}
+
+export async function fetchGoogleSheetSourceData(): Promise<StateRow[]> {
+  const response = await fetch(GOOGLE_SHEET_URL);
+  if (!response.ok) {
+    throw new Error(`Google Sheets returned ${response.status}`);
+  }
+  return parseGoogleSheetResponse(await response.text());
+}
+
+export async function fetchGoogleSheetData(): Promise<StateRow[]> {
+  const response = await fetch("/api/tourism-data");
+  if (!response.ok) {
+    throw new Error(`Tourism data API returned ${response.status}`);
+  }
+  const rows = (await response.json()) as StateRow[];
+  if (!Array.isArray(rows) || !rows.length) {
+    throw new Error("Tourism data API returned no rows");
+  }
+  return rows;
+}
+
+// Fallback 16 negeri dan Wilayah Persekutuan jika Google Sheets tidak tersedia.
 export const BASE_DATA: StateRow[] = [
   { state: "Selangor", tourists: 42.6, water: 1820.4, wqi: 62.1, rain: 2450, forest: 250.3 },
   { state: "Pulau Pinang", tourists: 18.4, water: 402.7, wqi: 68.4, rain: 2670, forest: 12.6 },
@@ -33,6 +89,9 @@ export const BASE_DATA: StateRow[] = [
   { state: "Kedah", tourists: 9.6, water: 388.1, wqi: 70.2, rain: 2260, forest: 320.7 },
   { state: "Negeri Sembilan", tourists: 8.9, water: 296.5, wqi: 72.8, rain: 2170, forest: 165.4 },
   { state: "Perlis", tourists: 3.2, water: 96.2, wqi: 73.4, rain: 1980, forest: 38.1 },
+  { state: "W.P. Kuala Lumpur", tourists: 35.06, water: 1415.835, wqi: 100, rain: 3321.9, forest: 0.085 },
+  { state: "W.P. Labuan", tourists: 0.604, water: 18.615, wqi: 0, rain: 3457.9, forest: 0 },
+  { state: "W.P. Putrajaya", tourists: 3.146, water: 1415.835, wqi: 100, rain: 2407.3, forest: 0 },
 ];
 
 export type RiskInfo = { category: string; color: string; tone: RiskTone };
