@@ -261,7 +261,12 @@ function Dashboard() {
           {sourceStatus === "loading"
             ? "Memuatkan data Google Sheets..."
             : sourceStatus === "live"
-              ? "Sumber data: Google Sheets • TourismEcoAI_BPPAS"
+              ? (
+                <>
+                  Sumber: Penerbitan Kompendium Perangkaan Alam Sekitar (KPAS) dan{" "}
+                  <em>Domestic Tourism Survey (DTS)</em>.
+                </>
+              )
               : "Sumber data: Data penanda aras tempatan"}
         </p>
 
@@ -480,7 +485,6 @@ function Dashboard() {
 
         <SectionCard
           title={`Matriks Pemantauan ${data.kpi.totalStates} Negeri & Cadangan Polisi Intervensi AI`}
-          subtitle="Diselaraskan dengan RMK-13 & UN SEEA"
           tag={`${filteredRecords.length} negeri dipaparkan`}
         >
           <div className="overflow-x-auto">
