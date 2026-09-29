@@ -433,16 +433,6 @@ function Dashboard() {
           title={`Matriks Pemantauan ${data.kpi.totalStates} Negeri & Cadangan Polisi Intervensi AI`}
           tag={`${filteredRecords.length} negeri dipaparkan`}
         >
-          <div className="border-b border-border bg-muted/30 px-5 py-3 text-xs leading-5 text-muted-foreground">
-            <p>
-              <span className="font-semibold text-foreground">Cara kira:</span> skor setiap faktor = normalisasi Min–Max
-              (nilai − minimum) ÷ (maksimum − minimum) × 100 × pemberat. TEPI asas ialah jumlah lima sumbangan faktor.
-            </p>
-            <p className="mt-1">
-              Pelancongan (DTS) 30% + penggunaan air 25% + tekanan marin (100 − MWQI) 20% + hujan tahunan 15% + keluasan hutan simpan 10%.
-              Nilai faktor dalam jadual ialah mata sumbangan asas; skor TEPI dan status risiko turut mengambil kira unjuran slider simulasi.
-            </p>
-          </div>
           <div className="overflow-x-auto">
             <table className="w-full min-w-[1600px] text-sm">
               <thead>
@@ -512,6 +502,28 @@ function Dashboard() {
                 })}
               </tbody>
             </table>
+          </div>
+          <div className="border-t-2 border-accent bg-muted/30 px-5 py-5 sm:px-6">
+            <div className="grid gap-4 lg:grid-cols-[minmax(0,0.75fr)_minmax(0,1.75fr)] lg:gap-8">
+              <div>
+                <p className="text-[0.68rem] font-bold uppercase tracking-[0.12em] text-primary">Kaedah pengiraan</p>
+                <h3 className="mt-1 font-display text-base font-bold text-foreground">Bagaimana skor TEPI dikira</h3>
+                <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                  Semua faktor ditukar kepada skala 0–100 sebelum pemberat digunakan.
+                </p>
+              </div>
+              <div className="space-y-3 text-xs leading-5 text-muted-foreground">
+                <p>
+                  <span className="font-semibold text-foreground">1. Skor faktor:</span> ((nilai − minimum) ÷ (maksimum − minimum)) × 100 × pemberat.
+                </p>
+                <p>
+                  <span className="font-semibold text-foreground">2. TEPI asas:</span> jumlah skor Pelancongan (30%) + Air (25%) + Marin (20%) + Hujan (15%) + Hutan (10%).
+                </p>
+                <p>
+                  <span className="font-semibold text-foreground">Perhatian:</span> faktor Marin menggunakan 100 − MWQI. Mata faktor dalam jadual ialah sumbangan asas; skor TEPI dan status risiko mengambil kira unjuran slider simulasi.
+                </p>
+              </div>
+            </div>
           </div>
         </SectionCard>
 
