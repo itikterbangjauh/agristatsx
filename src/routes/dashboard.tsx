@@ -5,11 +5,7 @@ import {
   BarChart,
   CartesianGrid,
   Cell,
-  Legend,
-  LabelList,
   ResponsiveContainer,
-  Scatter,
-  ScatterChart,
   Tooltip,
   XAxis,
   YAxis,
@@ -41,7 +37,6 @@ import {
   computeDashboard,
   fetchGoogleSheetData,
   simulateTepi,
-  TEPI_WEIGHTS,
   type TepiRecord,
   type StateRow,
 } from "@/lib/tepi";
@@ -177,24 +172,6 @@ function Dashboard() {
     z: r.forest,
     tone: r.riskTone,
   }));
-
-  const stackData = filteredRecords.map((r) => {
-    const simulatedScores = {
-      ...r.subScores,
-      tourism: r.subScores.tourism * (1 + growth),
-      water: r.subScores.water * (1 + growth * 1.05),
-    };
-    const total = Object.values(simulatedScores).reduce((a, b) => a + b, 0) || 1;
-    const p = (n: number) => Number(((n / total) * 100).toFixed(1));
-    return {
-      state: r.state,
-      Pelancongan: p(simulatedScores.tourism),
-      "Penggunaan Air": p(simulatedScores.water),
-      "Tekanan Marin": p(simulatedScores.wqi),
-      Hujan: p(simulatedScores.climate),
-      "Hutan Simpan": p(simulatedScores.forest),
-    };
-  });
 
   const projTourists = data.kpi.totalTourists * (1 + growth);
   const projWater = data.kpi.totalWater * (1 + growth * 1.05);
@@ -453,51 +430,38 @@ function Dashboard() {
         </div>
 
         <SectionCard
-          title="Penguraian 5 Komponen Pemacu Tekanan Alam Sekitar"
-          subtitle={`Pelancongan ${TEPI_WEIGHTS.tourism * 100}% • Air ${TEPI_WEIGHTS.water * 100}% • Tekanan Marin ${TEPI_WEIGHTS.wqi_marine * 100}% • Hujan ${TEPI_WEIGHTS.climate * 100}% • Hutan ${TEPI_WEIGHTS.forest * 100}%`}
-          tag="100% Stacked Analysis"
-        >
-          <div className="h-[520px] p-4">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={stackData} layout="vertical" margin={{ top: 8, right: 16, bottom: 8, left: 40 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" horizontal={false} />
-                <XAxis type="number" domain={[0, 100]} unit="%" tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} />
-                <YAxis type="category" dataKey="state" width={110} tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} />
-                <Tooltip
-                  contentStyle={{
-                    borderRadius: 8,
-                    border: "1px solid var(--border)",
-                    background: "var(--card)",
-                    fontSize: 12,
-                  }}
-                  formatter={(v: number) => `${v}%`}
-                />
-                <Legend wrapperStyle={{ fontSize: 11 }} />
-                <Bar dataKey="Pelancongan" stackId="a" fill="var(--chart-2)" />
-                <Bar dataKey="Penggunaan Air" stackId="a" fill="var(--chart-1)" />
-                <Bar dataKey="Tekanan Marin" stackId="a" fill="var(--chart-3)" />
-                <Bar dataKey="Hujan" stackId="a" fill="var(--chart-4)" />
-                <Bar dataKey="Hutan Simpan" stackId="a" fill="var(--chart-5)" radius={[0, 4, 4, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </SectionCard>
-
-        <SectionCard
           title={`Matriks Pemantauan ${data.kpi.totalStates} Negeri & Cadangan Polisi Intervensi AI`}
           tag={`${filteredRecords.length} negeri dipaparkan`}
         >
+          <div className="border-b border-border bg-muted/30 px-5 py-3 text-xs leading-5 text-muted-foreground">
+            <p>
+              <span className="font-semibold text-foreground">Cara kira:</span> skor setiap faktor = normalisasi Min–Max
+              (nilai − minimum) ÷ (maksimum − minimum) × 100 × pemberat. TEPI asas ialah jumlah lima sumbangan faktor.
+            </p>
+            <p className="mt-1">
+              Pelancongan (DTS) 30% + penggunaan air 25% + tekanan marin (100 − MWQI) 20% + hujan tahunan 15% + keluasan hutan simpan 10%.
+              Nilai faktor dalam jadual ialah mata sumbangan asas; skor TEPI dan status risiko turut mengambil kira unjuran slider simulasi.
+            </p>
+          </div>
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[960px] text-sm">
+            <table className="w-full min-w-[1600px] text-sm">
               <thead>
                 <tr className="bg-muted/60 text-[0.7rem] uppercase tracking-wide text-muted-foreground">
-                  <th className="px-4 py-3 text-left">Kedudukan / Negeri</th>
-                  <th className="px-3 py-3 text-center">Pelancong (Juta)</th>
-                  <th className="px-3 py-3 text-center">Air (Juta m³)</th>
-                  <th className="px-3 py-3 text-center">Intensiti Air</th>
-                  <th className="px-3 py-3 text-center">Skor TEPI</th>
-                  <th className="px-3 py-3 text-center">Status Risiko</th>
-                  <th className="px-4 py-3 text-left">Cadangan Intervensi Polisi (AI)</th>
+                  <th rowSpan={2} className="px-4 py-3 text-left">Kedudukan / Negeri</th>
+                  <th rowSpan={2} className="px-3 py-3 text-center">Pelancong (Juta)</th>
+                  <th rowSpan={2} className="px-3 py-3 text-center">Air (Juta m³)</th>
+                  <th rowSpan={2} className="px-3 py-3 text-center">Intensiti Air</th>
+                  <th colSpan={5} className="px-3 py-2 text-center">Sumbangan faktor TEPI asas (mata)</th>
+                  <th rowSpan={2} className="px-3 py-3 text-center">Skor TEPI (unjuran)</th>
+                  <th rowSpan={2} className="px-3 py-3 text-center">Status Risiko</th>
+                  <th rowSpan={2} className="px-4 py-3 text-left">Cadangan Intervensi Polisi (AI)</th>
+                </tr>
+                <tr className="bg-muted/60 text-[0.7rem] uppercase tracking-wide text-muted-foreground">
+                  <th className="px-3 py-2 text-center">Pelancongan · 30%</th>
+                  <th className="px-3 py-2 text-center">Air · 25%</th>
+                  <th className="px-3 py-2 text-center">Marin · 20%</th>
+                  <th className="px-3 py-2 text-center">Hujan · 15%</th>
+                  <th className="px-3 py-2 text-center">Hutan · 10%</th>
                 </tr>
               </thead>
               <tbody>
@@ -521,6 +485,11 @@ function Dashboard() {
                       <td className="px-3 py-3 text-center font-semibold text-primary">
                         {r.waterIntensity.toFixed(2)} m³
                       </td>
+                      <td className="px-3 py-3 text-center tabular-nums">{r.subScores.tourism.toFixed(1)}</td>
+                      <td className="px-3 py-3 text-center tabular-nums">{r.subScores.water.toFixed(1)}</td>
+                      <td className="px-3 py-3 text-center tabular-nums">{r.subScores.wqi.toFixed(1)}</td>
+                      <td className="px-3 py-3 text-center tabular-nums">{r.subScores.climate.toFixed(1)}</td>
+                      <td className="px-3 py-3 text-center tabular-nums">{r.subScores.forest.toFixed(1)}</td>
                       <td className="px-3 py-3 text-center">
                         <span
                           className="inline-block rounded-md px-2.5 py-1 text-xs font-bold text-primary-foreground"

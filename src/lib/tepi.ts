@@ -107,13 +107,13 @@ export function getRiskInfo(score: number): RiskInfo {
 export function getPolicyRecommendation(tone: RiskTone): string {
   switch (tone) {
     case "critical":
-      return "Kuatkuasakan kawalan had muatan (carrying capacity), tingkatkan segera rizab air & alihkan aliran pelancong ke zon alternatif.";
+      return "Kurangkan jumlah pelawat di kawasan yang terlalu sesak, pastikan bekalan air mencukupi dan galakkan pelawat ke kawasan lain.";
     case "high":
-      return "Pantau kualiti air marin dan jadualkan agihan air loji terawat sebelum musim kemuncak pelancongan.";
+      return "Periksa kualiti air laut dan rancang bekalan air lebih awal, terutama sebelum musim cuti.";
     case "moderate":
-      return "Kapasiti ekologi stabil. Galakkan inisiatif eko-pelancongan dan pensijilan kelestarian premis perhotelan.";
+      return "Keadaan masih terkawal. Galakkan hotel dan pengusaha pelancongan mengurangkan sisa serta menjaga alam sekitar.";
     default:
-      return "Zon lestari. Destinasi berdaya tampung tinggi untuk menyerap limpahan pelancong dari negeri berisiko.";
+      return "Keadaan alam sekitar masih baik. Negeri ini boleh menerima lebih ramai pelawat sambil terus menjaga kebersihan dan alam semula jadi.";
   }
 }
 
